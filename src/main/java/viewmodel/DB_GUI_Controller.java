@@ -27,6 +27,8 @@ import java.time.LocalDate;
 import java.util.Optional;
 import java.util.ResourceBundle;
 
+import javafx.beans.binding.BooleanBinding;
+
 public class DB_GUI_Controller implements Initializable {
 
     @FXML
@@ -35,6 +37,12 @@ public class DB_GUI_Controller implements Initializable {
     ImageView img_view;
     @FXML
     MenuBar menuBar;
+
+    @FXML
+    private Button addBtn, deleteBtn, editBtn;
+    @FXML
+    private MenuItem newItem, deleteItem, editItem;
+
     @FXML
     private TableView<Person> tv;
     @FXML
@@ -54,6 +62,32 @@ public class DB_GUI_Controller implements Initializable {
             tv_major.setCellValueFactory(new PropertyValueFactory<>("major"));
             tv_email.setCellValueFactory(new PropertyValueFactory<>("email"));
             tv.setItems(data);
+
+            // Disable Edit/Delete (buttons & menu items) until a row is selected
+            deleteBtn.setDisable(true);
+            editBtn.setDisable(true);
+            deleteItem.setDisable(true);
+            editItem.setDisable(true);
+
+            // Disable Add button and New menu item until ALL fields are non-empty
+            BooleanBinding formInvalid = first_name.textProperty().isEmpty()
+                    .or(last_name.textProperty().isEmpty())
+                    .or(department.textProperty().isEmpty())
+                    .or(major.textProperty().isEmpty())
+                    .or(email.textProperty().isEmpty())
+                    .or(imageURL.textProperty().isEmpty());
+            addBtn.disableProperty().bind(formInvalid);
+            newItem.disableProperty().bind(formInvalid);
+
+            // Listen for table‐row selection to enable Edit/Delete
+            tv.getSelectionModel().selectedItemProperty().addListener((obs, oldSel, newSel) -> {
+                boolean rowSelected = (newSel != null);
+                deleteBtn.setDisable(!rowSelected);
+                editBtn.setDisable(!rowSelected);
+                deleteItem.setDisable(!rowSelected);
+                editItem.setDisable(!rowSelected);
+            });
+
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
